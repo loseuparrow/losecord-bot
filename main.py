@@ -1,4 +1,4 @@
-import discord, time, requests, math
+import discord, time, requests, math, os
 from discord.ext import tasks
 
 serverId = 1558579019669315694
@@ -14,7 +14,7 @@ botChannelId = 1567205782607368252
 memberLastMessage = {}
 memberXPdict = {}
 
-sheetsToken = "https://script.google.com/macros/s/AKfycby_W9W84JwEgoLDZ_c1p3QI1BBZU8NpSi_WuCO5lyzbaYoFPinRw9kGV-YEqjyVbGIgZw/exec"
+sheetsToken = os.getenv("SHEETS_API")
 
 pronounsMessageId = 1567291884853010553
 disableStreamPingsId = 1567291895917576324
@@ -233,4 +233,4 @@ async def on_ready():
 
     updateSheet.start()
 
-client.run("MTU2NzAyNjc4NjE3NTU1NzYzMg.Gnx-uC.hQ-mDZNZ0jEsJXSbnx4QOcQJ55rNPvfHv9AJZI")
+client.run(os.getenv("TOKEN"))
