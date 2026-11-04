@@ -142,7 +142,7 @@ async def on_member_remove(member):
 
 async def addRole(author, roleId):
     role = discord.utils.get(author.guild.roles, id=roleId)
-    await author.add_roles(role)    
+    await author.add_roles(role)
 
 # on message sent
 @client.event
