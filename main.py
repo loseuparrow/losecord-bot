@@ -73,8 +73,8 @@ async def ping(interaction: discord.Interaction):
 
     xpPercent = xp / XPneededToLevelUp
 
-    barFilled = math.floor(xpPercent * 10)
-    xpBar = f"`{barFilled * "█"}{(10 - barFilled) * "░"}`"
+    barFilled = math.floor(xpPercent * 20)
+    xpBar = f"`{barFilled * "█"}{(20 - barFilled) * "░"}`"
 
     messageEmbed = discord.Embed(colour=returnLevelColour(level))
     messageEmbed.title = f"@{interaction.user.display_name} stats:"
