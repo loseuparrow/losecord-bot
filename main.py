@@ -48,6 +48,14 @@ async def talk(interaction: discord.Interaction, text_to_send: str):
     await interaction.channel.send(text_to_send)
     await interaction.delete_original_response()
 
+def returnLevelColour(level):
+    levelColourIndex = math.floor(level / 5)
+
+    try:
+        return levelColourList[levelColourIndex]
+    except IndexError:
+        return levelColourList[-1]
+
 # check bot ping
 @tree.command(name="level",
               description=f"check your level progress",
@@ -63,7 +71,11 @@ async def ping(interaction: discord.Interaction):
 
     XPneededToLevelUp = (level + 1) * 3
 
-    await interaction.response.send_message(f"Level: {level}\nXP: {xp*10}/{XPneededToLevelUp*10} ({format(xp/XPneededToLevelUp*100, ".2f")}%)")
+    messageEmbed = discord.Embed(colour=returnLevelColour(level))
+    messageEmbed.title = f"<@{userId}>'s level:"
+    messageEmbed.description = f"Level: {level}\nXP: {xp*10}/{XPneededToLevelUp*10} ({format(xp/XPneededToLevelUp*100, ".2f")}%)"
+
+    await interaction.response.send_message(embed=messageEmbed)
 
 # check bot ping
 @tree.command(name="ping",
@@ -197,13 +209,7 @@ async def on_message(message):
 
                 botChannel = client.get_channel(botChannelId)
 
-                levelColourIndex = math.floor(memberCurrentLevel / 5)
-                try:
-                    levelColour = levelColourList[levelColourIndex]
-                except IndexError:
-                    levelColour = levelColourList[-1]
-
-                messageEmbed = discord.Embed(colour=levelColour)
+                messageEmbed = discord.Embed(colour=returnLevelColour(memberCurrentLevel))
                 messageEmbed.description = f"<@{userID}> leveled ↑ to **level {memberCurrentLevel}**!"
 
                 await botChannel.send(embed=messageEmbed)
