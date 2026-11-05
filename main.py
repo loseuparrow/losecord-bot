@@ -63,7 +63,7 @@ async def ping(interaction: discord.Interaction):
 
     XPneededToLevelUp = (level + 1) * 3
 
-    await interaction.response.send_message(f"Level: {level}\nXP: {xp}/{XPneededToLevelUp} ({format(xp/XPneededToLevelUp*100, ".2f")}%)")
+    await interaction.response.send_message(f"Level: {level}\nXP: {xp*10}/{XPneededToLevelUp*10} ({format(xp/XPneededToLevelUp*100, ".2f")}%)")
 
 # check bot ping
 @tree.command(name="ping",
