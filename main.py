@@ -60,8 +60,13 @@ def returnLevelColour(level):
 @tree.command(name="level",
               description=f"check your level progress",
               guild=discord.Object(id=serverId))
-async def ping(interaction: discord.Interaction):
-    userId = interaction.user.id
+async def ping(interaction: discord.Interaction, memberInput: discord.Member):
+    if not memberInput:
+        userId = interaction.user.id
+    else:
+        userId = memberInput.id
+
+    member = discord.utils.get(interaction.guild.members, id=userId)
 
     try:
         xp, level = memberXPdict[userId]
@@ -77,7 +82,7 @@ async def ping(interaction: discord.Interaction):
     xpBar = f"`{barFilled * "█"}{(20 - barFilled) * "░"}`"
 
     messageEmbed = discord.Embed(colour=returnLevelColour(level))
-    messageEmbed.title = f"{interaction.user.display_name} stats:"
+    messageEmbed.title = f"{member.display_name} stats:"
     messageEmbed.description = f"Level: {level}\nXP: {xp * 10}/{XPneededToLevelUp * 10}\n{xpBar}\n({round(xpPercent * 100, 2)}%)"
 
     await interaction.response.send_message(embed=messageEmbed)
