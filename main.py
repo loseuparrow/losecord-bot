@@ -33,7 +33,7 @@ async def test(interaction: discord.Interaction):
         await interaction.response.send_message("only for bot admins (for testing)", ephemeral=True)
         return
 
-    await interaction.response.send_message(memberXPdict)
+    await interaction.response.send_message(memberXPdict, ephemeral=True)
 
 # talk through the bot
 @tree.command(name="talk",
@@ -47,6 +47,23 @@ async def talk(interaction: discord.Interaction, text_to_send: str):
     await interaction.response.defer(ephemeral=True)
     await interaction.channel.send(text_to_send)
     await interaction.delete_original_response()
+
+# check bot ping
+@tree.command(name="level",
+              description=f"check your level progress",
+              guild=discord.Object(id=serverId))
+async def ping(interaction: discord.Interaction):
+    userId = interaction.user.id
+
+    try:
+        xp, level = memberXPdict[userId]
+    except KeyError:
+        await interaction.response.send_message(f"you dont have a level yet", ephemeral=True)
+        return
+
+    XPneededToLevelUp = (level + 1) * 3
+
+    await interaction.response.send_message(f"Level: {level}\nXP: {xp}/{XPneededToLevelUp} ({format(xp/XPneededToLevelUp*100, ".2f")}%)")
 
 # check bot ping
 @tree.command(name="ping",
@@ -158,7 +175,7 @@ async def on_message(message):
             memberCurrentLevel = memberXPdict[userID][1]
 
             memberCurrentXP += 1
-            if memberCurrentXP >= (memberCurrentLevel + 1 ) * 3: # >= incase i ever edit the value
+            if memberCurrentXP >= (memberCurrentLevel + 1) * 3: # >= incase i ever edit the value
                 memberCurrentLevel += 1 
                 memberCurrentXP = 0
 
