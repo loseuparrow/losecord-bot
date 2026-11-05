@@ -61,6 +61,7 @@ def returnLevelColour(level):
 @tree.command(name="level",
               description=f"check your level progress",
               guild=discord.Object(id=serverId))
+@discord.app_commands.describe(member_input="(optional)")
 async def level(interaction: discord.Interaction, member_input: Optional[discord.Member] = None):
     if not member_input:
         userId = interaction.user.id
@@ -72,7 +73,7 @@ async def level(interaction: discord.Interaction, member_input: Optional[discord
     try:
         xp, level = memberXPdict[userId]
     except KeyError:
-        await interaction.response.send_message(f"you dont have a level yet", ephemeral=True)
+        await interaction.response.send_message(f"user dont have a level yet", ephemeral=True)
         return
 
     XPneededToLevelUp = (level + 1) * 3
@@ -83,7 +84,7 @@ async def level(interaction: discord.Interaction, member_input: Optional[discord
     xpBar = f"`{barFilled * "█"}{(20 - barFilled) * "░"}`"
 
     messageEmbed = discord.Embed(colour=returnLevelColour(level))
-    messageEmbed.title = f"{member.display_name} stats:"
+    messageEmbed.title = f"{member.name} stats:"
     messageEmbed.description = f"Level: {level}\nXP: {xp * 10}/{XPneededToLevelUp * 10}\n{xpBar}\n({round(xpPercent * 100, 2)}%)"
 
     await interaction.response.send_message(embed=messageEmbed)
