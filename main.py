@@ -1,5 +1,6 @@
 import discord, time, requests, math, os
 from discord.ext import tasks
+from typing import Optional
 
 serverId = 1558579019669315694
 defaultRoleId = 1567195682048057475
@@ -56,11 +57,12 @@ def returnLevelColour(level):
     except IndexError:
         return levelColourList[-1]
 
-# check bot ping
+# check your own or another persons level
 @tree.command(name="level",
               description=f"check your level progress",
               guild=discord.Object(id=serverId))
-async def ping(interaction: discord.Interaction, memberInput: discord.Member):
+@discord.app_commands.describe(memberInput="(optional) @member")
+async def level(interaction: discord.Interaction, memberInput: Optional[discord.Member] = None):
     if not memberInput:
         userId = interaction.user.id
     else:
