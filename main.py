@@ -61,12 +61,11 @@ def returnLevelColour(level):
 @tree.command(name="level",
               description=f"check your level progress",
               guild=discord.Object(id=serverId))
-@discord.app_commands.describe(memberInput="(optional) @member")
-async def level(interaction: discord.Interaction, memberInput: Optional[discord.Member] = None):
-    if not memberInput:
+async def level(interaction: discord.Interaction, member_input: Optional[discord.Member] = None):
+    if not member_input:
         userId = interaction.user.id
     else:
-        userId = memberInput.id
+        userId = member_input.id
 
     member = discord.utils.get(interaction.guild.members, id=userId)
 
