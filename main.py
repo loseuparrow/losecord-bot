@@ -25,16 +25,52 @@ levelColourList = [0xA0D0FF, 0xA0C0FF, 0xA0B0FF, 0xA0A0FF, 0xC0A0FF, 0xE0A0FF, 0
 joinColour = 0x40FF60
 leaveColour = 0xFF4060
 
-# tests whatever im working on
-@tree.command(name="test",
-              description=f"tests whatever im working on",
+# returns colour hexcode for given level
+def returnLevelColour(level):
+    levelColourIndex = math.floor(level / 5)
+
+    try:
+        return levelColourList[levelColourIndex]
+    except IndexError:
+        return levelColourList[-1]
+
+# adds role to member
+async def addReactionRole(member, roleId):
+    role = discord.utils.get(member.guild.roles, id=roleId)
+
+    await member.add_roles(role)
+    await member.send(f"`{role}` added as a role")
+
+# removes role from member
+async def removeReactionRole(member, roleId):
+    role = discord.utils.get(member.guild.roles, id=roleId)
+
+    await member.remove_roles(role)
+    await member.send(f"`{role}` removed as a role")
+
+# saves the XP dict to spreadsheet every 
+@tasks.loop(seconds=300)
+async def updateSheet():
+    xp_data_array = list(zip(*[[f"'{name}", level_data[0], level_data[1]] for name, level_data in memberXPdict.items()]))
+    xp_data_json = {
+    "userID": xp_data_array[0],
+    "userXP": xp_data_array[1],
+    "userLevel": xp_data_array[2],
+    }
+
+    requests.post(sheetsToken, json=xp_data_json)
+
+# save current levels
+@tree.command(name="savelevels",
+              description=f"saves XP levels",
               guild=discord.Object(id=serverId))
-async def test(interaction: discord.Interaction):
+async def saveLevels(interaction: discord.Interaction):
     if interaction.user.id not in adminIds:
-        await interaction.response.send_message("only for bot admins (for testing)", ephemeral=True)
+        await interaction.response.send_message("only for bot admins", ephemeral=True)
         return
 
-    await interaction.response.send_message(memberXPdict, ephemeral=True)
+    await updateSheet()
+    await interaction.response.send_message("updated XP sheet", ephemeral=True)
 
 # talk through the bot
 @tree.command(name="talk",
@@ -49,31 +85,23 @@ async def talk(interaction: discord.Interaction, text_to_send: str):
     await interaction.channel.send(text_to_send)
     await interaction.delete_original_response()
 
-def returnLevelColour(level):
-    levelColourIndex = math.floor(level / 5)
-
-    try:
-        return levelColourList[levelColourIndex]
-    except IndexError:
-        return levelColourList[-1]
-
 # check your own or another persons level
 @tree.command(name="level",
               description=f"check your level progress",
               guild=discord.Object(id=serverId))
-@discord.app_commands.describe(member_input="(optional)")
-async def level(interaction: discord.Interaction, member_input: Optional[discord.Member] = None):
-    if not member_input:
+@discord.app_commands.describe(member_at="(optional)")
+async def level(interaction: discord.Interaction, member_at: Optional[discord.Member] = None):
+    if not member_at:
         userId = interaction.user.id
     else:
-        userId = member_input.id
+        userId = member_at.id
 
     member = discord.utils.get(interaction.guild.members, id=userId)
 
     try:
         xp, level = memberXPdict[userId]
     except KeyError:
-        await interaction.response.send_message(f"user dont have a level yet", ephemeral=True)
+        await interaction.response.send_message(f"user doesnt have a level yet", ephemeral=True)
         return
 
     XPneededToLevelUp = (level + 1) * 3
@@ -96,12 +124,6 @@ async def level(interaction: discord.Interaction, member_input: Optional[discord
 async def ping(interaction: discord.Interaction):
     await interaction.response.send_message(f"pong 🏓 {client.latency * 1000:.2f}ms", ephemeral=True)
 
-# adds role to member
-async def addReactionRole(member, roleId):
-    role = discord.utils.get(member.guild.roles, id=roleId)
-    await member.add_roles(role)
-    await member.send(f"`{role}` added as a role")
-
 # when any message gets reacted to
 @client.event
 async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
@@ -120,14 +142,6 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
         case "🧆": await addReactionRole(payload.member, 1567288103146754118)
         case "🎣": await addReactionRole(payload.member, 1567288122260197467)
         case "🔕": await addReactionRole(payload.member, 1567289812178829482)
-
-
-# removes role from member
-async def removeReactionRole(member, roleId):
-    role = discord.utils.get(member.guild.roles, id=roleId)
-    await member.remove_roles(role)
-    await member.send(f"`{role}` removed as a role")
-
 
 # when any message gets reacted to
 @client.event
@@ -233,18 +247,6 @@ async def on_message(message):
 
     if message.content == "<a:giggleler:1567287125546770493>":
         await message.add_reaction("<a:giggleler:1567287125546770493>")
-
-# saves the XP dict to spreadsheet every 
-@tasks.loop(seconds=300)
-async def updateSheet():
-    xp_data_array = list(zip(*[[f"'{name}", level_data[0], level_data[1]] for name, level_data in memberXPdict.items()]))
-    xp_data_json = {
-    "userID": xp_data_array[0],
-    "userXP": xp_data_array[1],
-    "userLevel": xp_data_array[2],
-    }
-
-    requests.post(sheetsToken, json=xp_data_json)
 
 # on bot started
 @client.event
