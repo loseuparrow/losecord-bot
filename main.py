@@ -34,6 +34,15 @@ def returnLevelColour(level):
     except IndexError:
         return levelColourList[-1]
 
+def XPneededToLevelUp(level):
+    return (level + 1) * 3
+
+def xpPercent(xp, level):
+    return xp / XPneededToLevelUp(level)
+
+def xpPercentFormated(xp, level):
+    return f"{xpPercent(xp, level) * 100:.2f}".rstrip("0").rstrip(".") + "%"
+
 # adds role to member
 async def addReactionRole(member, roleId):
     role = discord.utils.get(member.guild.roles, id=roleId)
@@ -111,16 +120,16 @@ async def level(interaction: discord.Interaction, member_at: Optional[discord.Me
         await interaction.response.send_message(f"user doesnt have a level yet", ephemeral=True)
         return
 
-    XPneededToLevelUp = (level + 1) * 3
-
-    xpPercent = xp / XPneededToLevelUp
-
-    barFilled = math.floor(xpPercent * 20)
+    barFilled = math.floor(xpPercent(xp, level) * 20)
     xpBar = f"`{barFilled * "█"}{(20 - barFilled) * "░"}`"
 
     messageEmbed = discord.Embed(colour=returnLevelColour(level))
     messageEmbed.title = f"{member.name} stats:"
-    messageEmbed.description = f"Level: {level}\nXP: {xp * 10}/{XPneededToLevelUp * 10}\n{xpBar}\n({round(xpPercent * 100, 2)}%)"
+    messageEmbed.description = f"\
+        Level: {level}\n\
+        XP: {xp * 10}/{XPneededToLevelUp(level) * 10}\n\
+        {xpBar}\n\
+        ({xpPercentFormated(xp, level)})"
 
     await interaction.response.send_message(embed=messageEmbed)
 
@@ -133,12 +142,14 @@ async def leaderboard(interaction: discord.Interaction):
 
     levelDataStr = ""
     for userID, levelData in list(memberXPdictTemp.items())[:10]:
-        member = discord.utils.get(interaction.guild.members, id=userID)
-        levelXP, level = levelData
+        xp, level = levelData
 
-        levelDataStr += f"{member.name}: Level {level} ({round((levelXP / (level + 1) * 3) * 100, 2)}/100)\n"
+        levelDataStr += f"<@{userID}>: Level {level} ({xpPercentFormated(xp, level)})\n"
 
-    print(memberXPdictTemp)
+    messageEmbed = discord.Embed(colour=joinColour)
+    messageEmbed.title = f"losecord↑ XP leaderboard:"
+    messageEmbed.description = levelDataStr
+    
     await interaction.response.send_message(levelDataStr)
 
 # when any message gets reacted to
