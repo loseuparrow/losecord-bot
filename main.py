@@ -85,6 +85,13 @@ async def talk(interaction: discord.Interaction, text_to_send: str):
     await interaction.channel.send(text_to_send)
     await interaction.delete_original_response()
 
+# check bot ping
+@tree.command(name="ping",
+              description=f"check the bots ping",
+              guild=discord.Object(id=serverId))
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message(f"pong 🏓 {client.latency * 1000:.2f}ms", ephemeral=True)
+
 # check your own or another persons level
 @tree.command(name="level",
               description=f"check your level progress",
@@ -117,12 +124,22 @@ async def level(interaction: discord.Interaction, member_at: Optional[discord.Me
 
     await interaction.response.send_message(embed=messageEmbed)
 
-# check bot ping
-@tree.command(name="ping",
-              description=f"check the bots ping",
+# check the level leaderboard
+@tree.command(name="leaderboard",
+              description=f"check the XP leaderboard",
               guild=discord.Object(id=serverId))
-async def ping(interaction: discord.Interaction):
-    await interaction.response.send_message(f"pong 🏓 {client.latency * 1000:.2f}ms", ephemeral=True)
+async def leaderboard(interaction: discord.Interaction):
+    memberXPdictTemp = dict(sorted(memberXPdict.items(), key=lambda item: (-item[1][1], -item[1][0])))
+
+    levelDataStr = ""
+    for userID, levelData in list(memberXPdictTemp.items())[:10]:
+        member = discord.utils.get(interaction.guild.members, id=userID)
+        levelXP, level = levelData
+
+        levelDataStr += f"{member.name}: Level {level} ({round((levelXP / (level + 1) * 3) * 100, 2)}/100)\n"
+
+    print(memberXPdictTemp)
+    await interaction.response.send_message(levelDataStr)
 
 # when any message gets reacted to
 @client.event
