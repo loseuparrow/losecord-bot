@@ -150,7 +150,7 @@ async def leaderboard(interaction: discord.Interaction):
     messageEmbed.title = f"losecord↑ XP leaderboard:"
     messageEmbed.description = levelDataStr
     
-    await interaction.response.send_message(levelDataStr)
+    await interaction.response.send_message(embed=messageEmbed)
 
 # when any message gets reacted to
 @client.event
